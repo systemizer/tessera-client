@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 _locals = {}
-execfile('tessera/client/_version.py', _locals)
+execfile('tessera/api/_version.py', _locals)
 version = _locals['__version__']
 
 setup(
@@ -14,7 +14,6 @@ setup(
     url='https://github.com/urbanairship/tessera-client',
 
     packages=find_packages(),
-    include_package_data=True, # Ensure templates, etc get pulled into sdists
     install_requires=[
         x.strip()
         for x in open('requirements.txt').readlines()
