@@ -8,6 +8,7 @@ setup(
     name='tessera-client',
     version=version,
     description='Data model and API client for tessera',
+    long_description=open('README.md').read(),
     license='Apache',
 
     author='Urban Airship',
@@ -15,6 +16,7 @@ setup(
     url='https://github.com/urbanairship/tessera-client',
 
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         x.strip()
         for x in open('requirements.txt').readlines()
