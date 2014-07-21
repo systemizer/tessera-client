@@ -11,6 +11,7 @@ setup(
     license='Apache',
 
     author='Urban Airship',
+    author_email='alpern@urbanairship.com',
     url='https://github.com/urbanairship/tessera-client',
 
     packages=find_packages(),
