@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 _locals = {}
-execfile('tessera/api/_version.py', _locals)
+execfile('tessera_client/api/_version.py', _locals)
 version = _locals['__version__']
 
 setup(

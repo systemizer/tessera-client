@@ -1,7 +1,7 @@
 
 import requests
 import logging
-from tessera.api.model import *
+from .model import *
 
 log = logging.getLogger(__name__)
 
