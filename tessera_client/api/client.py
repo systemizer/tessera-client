@@ -64,10 +64,10 @@ class TesseraClient(object):
         elif category:
             path = '/api/dashboard/category/{0}'.format(category)
         response = self._get(self._uri(path), definition=definition)
-        return [ Dashboard.from_json(d) for d in response['dashboards'] ]
+        return [ Dashboard.from_json(d) for d in response ]
 
     def get_dashboard(self, path, definition=False):
-        return Dashboard.from_json(self._get(path, definition=definition)['dashboards'][0])
+        return Dashboard.from_json(self._get(path, definition=definition)[0])
 
     def create_dashboard(self, dashboard):
         return self._post(self._uri('/api/dashboard/'),
@@ -85,8 +85,7 @@ class TesseraClient(object):
 
     def list_tags(self):
         response = self._get(self._uri('/api/tag/'))
-        return [ Tag.from_json(t) for t in response['tags'] ]
+        return [ Tag.from_json(t) for t in response ]
 
     def list_categories(self):
-        response = self._get(self._uri('/api/dashboard/category/'))
-        return response['categories']
+        return self._get(self._uri('/api/dashboard/category/'))
