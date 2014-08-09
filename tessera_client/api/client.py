@@ -28,7 +28,7 @@ class TesseraClient(object):
 
     def _get(self, path, **kwargs):
         log.debug('GET {0}'.format(path))
-        return self._process_response(requests.get(self._uri(path), params=kwargs))
+        return self._process_response(requests.get(self._uri(path), params=kwargs, headers={ 'Accept' : 'application/json' }))
 
     def _delete(self, path, **kwargs):
         log.debug('DELETE {0}'.format(path))
@@ -36,12 +36,12 @@ class TesseraClient(object):
 
     def _post(self, path, body, **kwargs):
         log.debug('POST {0}'.format(path))
-        return self._process_response(requests.get(self._uri(path),
-                                                   data=body,
-                                                   params=kwargs,
-                                                   headers={
-                                                       'Content-Type' : 'application/json'
-                                                   }))
+        return self._process_response(requests.post(self._uri(path),
+                                                    data=body,
+                                                    params=kwargs,
+                                                    headers={
+                                                        'Content-Type' : 'application/json'
+                                                    }))
 
     def _put(self, path, body, **kwargs):
         log.debug('PUT {0}'.format(path))
@@ -53,17 +53,20 @@ class TesseraClient(object):
                                                    }))
 
     def _process_response(self, response):
-        # TODO - error dispatching
         return response.json()
 
+        #
+        # API Methods
+        #
 
-
-    def list_dashboards(self, tag=None, category=None, definition=False):
+    def list_dashboards(self, tag=None, category=None, definition=False, imported_from=None):
         if tag:
             path = '/api/dashboard/tagged/{0}'.format(tag)
         elif category:
             path = '/api/dashboard/category/{0}'.format(category)
-        response = self._get(self._uri(path), definition=definition)
+        else:
+            path = '/api/dashboard/'
+        response = self._get(self._uri(path), definition=definition, imported_from=imported_from)
         return [ Dashboard.from_json(d) for d in response ]
 
     def get_dashboard(self, path, definition=False):
