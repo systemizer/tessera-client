@@ -272,6 +272,7 @@ class SummationTable(TablePresentation):
                  title   = None,
                  format  = ',.3f',
                  striped = False,
+                 sortable = False,
                  **kwargs):
         super(SummationTable, self).__init__(query     = query,
                                              item_type = 'summation_table',
@@ -279,6 +280,7 @@ class SummationTable(TablePresentation):
         self.title   = title
         self.format  = format
         self.striped = striped
+        self.sortable = sortable
 
     @classmethod
     def from_json(cls, d):
