@@ -82,18 +82,18 @@ class Tag(object):
             return cls(**d)
 
     def to_json(self):
-        json = {}
-        if (self.id):
+        json = dict()
+        if self.id:
             json['id'] = self.id
-        if (self.name):
+        if self.name:
             json['name'] = self.name
-        if (self.description):
+        if self.description:
             json['description'] = self.description
-        if (self.bgcolor):
+        if self.bgcolor:
             json['bgcolor'] = self.bgcolor
-        if (self.fgcolor):
+        if self.fgcolor:
             json['fgcolor'] = self.fgcolor
-        if (self.count):
+        if self.count:
             json['count'] = self.count
         return json
 
@@ -141,6 +141,21 @@ class DashboardItem(object):
         self.css_class = css_class
         self.height    = height
         self.style     = style
+        self.other     = kwargs
+
+    def to_json(self):
+        data = dict(item_type=self.item_type,
+                    item_id=self.item_id)
+        if self.css_class:
+            data['css_class'] = self.css_class
+        if self.style:
+            data['style'] = self.style
+        if self.height:
+            data['height'] = self.height
+        if self.other:
+            for k, v in self.other.items():
+                data[k] = v
+        return data
 
     @classmethod
     def from_json(cls, d):
@@ -153,7 +168,7 @@ class DashboardItem(object):
         if item_type in cls.CLASS_MAP:
             return cls.CLASS_MAP[item_type].from_json(d)
         else:
-            return GenericDashboardItem(item_type, **d)
+            return DashboardItem(item_type, **d)
 
     @classmethod
     def model(cls, item_type):
@@ -162,35 +177,6 @@ class DashboardItem(object):
             cls.CLASS_MAP[item_type] = model_cls
             return model_cls
         return process
-
-
-class GenericDashboardItem(DashboardItem):
-    def __init__(self,
-                 item_type,
-                 css_class = None,
-                 style     = None,
-                 height    = None,
-                 item_id   = None,
-                 **kwargs):
-        super(GenericDashboardItem, self).__init__(item_type,
-                                                   css_class = css_class,
-                                                   style     = style,
-                                                   height    = height,
-                                                   item_id   = item_id)
-        self.other = kwargs
-
-    def to_json(self):
-        data = {
-            'item_type' : self.item_type,
-            'item_id'   : self.item_id,
-            'css_class' : self.css_class,
-            'style'     : self.style,
-            'height'    : self.height
-        }
-        if self.other:
-            for k, v in self.other.items():
-                data[k] = v
-        return data
 
 # -----------------------------------------------------------------------------
 # Presentations
@@ -212,6 +198,14 @@ class Presentation(DashboardItem):
         super(Presentation, self).__init__(**kwargs)
         self.query      = query
         self.thresholds = thresholds
+
+    def to_json(self):
+        data = super(Presentation, self).to_json()
+        if self.query:
+            data['query'] = self.query
+        if self.thresholds:
+            data['thresholds'] = self.thresholds
+        return data
 
 
 # -----------------------------------------------------------------------------
@@ -243,6 +237,20 @@ class SingleStat(Presentation):
     def from_json(cls, d):
         _delattr(d, 'item_type')
         return cls(**d)
+
+    def to_json(self):
+        data = super(SingleStat, self).to_json()
+        if self.title:
+            data['title'] = self.title
+        if self.transform:
+            data['transform'] = self.transform
+        if self.index:
+            data['index'] = self.index
+        if self.units:
+            data['units'] = self.units
+        if self.format:
+            data['format'] = self.format
+        return data
 
 @DashboardItem.model('jumbotron_singlestat')
 class JumbotronSingleStat(SingleStat):
@@ -287,6 +295,18 @@ class SummationTable(TablePresentation):
         _delattr(d, 'item_type')
         return cls(**d)
 
+    def to_json(self):
+        data = super(SummationTable, self).to_json()
+        if self.title:
+            data['title'] = self.title
+        if self.format:
+            data['format'] = self.format
+        if self.striped is not None:
+            data['striped'] = self.striped
+        if self.sortable is not None:
+            data['sortable'] = self.sortable
+        return data
+
 # -----------------------------------------------------------------------------
 # Chart Presentations
 # -----------------------------------------------------------------------------
@@ -305,6 +325,16 @@ class ChartPresentation(Presentation):
         self.title       = title
         self.options     = options or {}
         self.interactive = interactive
+
+    def to_json(self):
+        data = super(ChartPresentation, self).to_json()
+        if self.title:
+            data['title'] = self.title
+        if self.options:
+            data['options'] = self.options
+        if self.interactive is not None:
+            data['interactive'] = self.interactive
+        return data
 
 @DashboardItem.model('donut_chart')
 class DonutChart(ChartPresentation):
@@ -341,6 +371,13 @@ class SimpleTimeSeries(ChartPresentation):
         _delattr(d, 'item_type')
         return cls(**d)
 
+    def to_json(self):
+        data = super(SimpleTimeSeries, self).to_json()
+        if self.filled is not None:
+            data['filled'] = self.filled
+        return data
+
+
 @DashboardItem.model('singlegraph')
 class SingleGraph(ChartPresentation):
     """A combination of SingleStat and SimpleTimeSeries - displays a
@@ -364,6 +401,15 @@ class SingleGraph(ChartPresentation):
     def from_json(cls, d):
         _delattr(d, 'item_type')
         return cls(**d)
+
+    def to_json(self):
+        data = super(SingleGraph, self).to_json()
+        if self.format:
+            data['format'] = self.format
+        if self.transform:
+            data['transform'] = self.transform
+        return data
+
 
 @DashboardItem.model('standard_time_series')
 class StandardTimeSeries(ChartPresentation):
@@ -414,6 +460,11 @@ class DashboardContainer(DashboardItem):
         else:
             self.items = [items]
 
+    def to_json(self):
+        json = super(DashboardContainer, self).to_json()
+        json['items'] = [ item.to_json() for item in self.items ]
+        return json
+
     @classmethod
     def _process_items(cls, data):
         data['items'] = [DashboardItem.from_json(i) for i in data['items']]
@@ -434,6 +485,16 @@ class Cell(DashboardContainer):
         self.span   = span
         self.offset = offset
         self.align  = align
+
+    def to_json(self):
+        data = super(Cell, self).to_json()
+        if self.span:
+            data['span'] = self.span
+        if self.offset:
+            data['offset'] = self.offset
+        if self.align:
+            data['align'] = self.align
+        return data
 
     @classmethod
     def from_json(cls, d):
@@ -474,6 +535,14 @@ class Section(DashboardContainer):
         self.layout = layout
         self.title  = title
 
+    def to_json(self):
+        data = super(Section, self).to_json()
+        if self.layout:
+            data['layout'] = self.layout
+        if self.title:
+            data['title'] = self.title
+        return data
+
     @classmethod
     def from_json(cls, d):
         if not d:
@@ -512,6 +581,17 @@ class Heading(DashboardItem):
     def from_json(cls, d):
         return Heading(**d)
 
+    def to_json(self):
+        data = super(Heading, self).to_json()
+        if self.text:
+            data['text'] = self.text
+        if self.level:
+            data['level'] = self.level
+        if self.description:
+            data['description'] = self.description
+        return data
+
+
 @DashboardItem.model('markdown')
 class Markdown(DashboardItem):
     def __init__(self,
@@ -525,6 +605,14 @@ class Markdown(DashboardItem):
     @classmethod
     def from_json(cls, d):
         return Markdown(**d)
+
+    def to_json(self):
+        data = super(Markdown, self).to_json()
+        if self.text:
+            data['text'] = self.text
+        if self.raw:
+            data['raw'] = self.raw
+        return data
 
 
 @DashboardItem.model('dashboard_definition')
@@ -544,6 +632,12 @@ class DashboardDefinition(DashboardContainer):
                 for key in list(query.keys()):
                     if key not in [ 'targets', 'name' ]:
                         del query[key]
+
+    def to_json(self):
+        data = super(DashboardDefinition, self).to_json()
+        if self.queries:
+            data['queries'] = self.queries
+        return data
 
     @classmethod
     def from_json(cls, data):
