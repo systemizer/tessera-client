@@ -307,6 +307,48 @@ class SummationTable(TablePresentation):
             data['sortable'] = self.sortable
         return data
 
+@DashboardItem.model('timeshift_summation_table')
+class TimeShiftSummationTable(TablePresentation):
+    """
+    JS class: ds.models.timeshift_summation_table
+    """
+    def __init__(self,
+                 query        = None,
+                 title        = None,
+                 format       = ',.3s',
+                 shift        = '1d',
+                 striped      = False,
+                 include_sums = False,
+                 **kwargs):
+        super(TimeShiftSummationTable, self).__init__(
+            query     = query,
+            item_type = 'timeshift_summation_table',
+            **kwargs)
+        self.title   = title
+        self.format  = format
+        self.shift  = shift
+        self.striped = striped
+        self.include_sums = include_sums
+
+    @classmethod
+    def from_json(cls, d):
+        _delattr(d, 'item_type')
+        return cls(**d)
+
+    def to_json(self):
+        data = super(TimeShiftSummationTable, self).to_json()
+        if self.title:
+            data['title'] = self.title
+        if self.format:
+            data['format'] = self.format
+        if self.shift:
+            data['shift'] = self.shift
+        if self.striped is not None:
+            data['striped'] = self.striped
+        if self.include_sums is not None:
+            data['include_sums'] = self.include_sums
+        return data
+
 # -----------------------------------------------------------------------------
 # Chart Presentations
 # -----------------------------------------------------------------------------
